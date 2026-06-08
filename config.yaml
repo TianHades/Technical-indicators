@@ -1,0 +1,24 @@
+# Trade Sentry 用户配置文件
+# 修改此文件后下次审查自动生效，无需重启
+
+user: {}
+
+thresholds:
+  max_position_pct: 20           # 单笔最大仓位 (%)
+  max_total_position_pct: 80     # 总持仓上限 (%)
+  max_trades_per_day: 5          # 每日最大交易笔数
+  cooldown_minutes: 30           # 同标的冷却时间 (分钟)
+
+rules:
+  disabled: []                   # 禁用的规则 ID
+  block_to_warn: []              # 永久降级为 WARN 的 BLOCK 规则
+  auto_downgrade_after: 3        # 连续覆盖 N 次后自动降级 (0=禁用)
+
+regime:
+  adx_trend_threshold: 25
+  adx_choppy_threshold: 20
+  atr_volatile_percentile: 80
+
+data:
+  cache_days: 1                  # 缓存有效期 (天)
+  lookback_days: 250             # 默认回溯天数

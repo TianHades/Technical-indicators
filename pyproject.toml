@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trade-sentry"
+version = "0.1.0"
+description = "交易计划审查系统 — 执行前的 sanity check"
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+    "yfinance>=0.2.0",
+    "akshare>=1.12.0",
+    "pandas-ta-classic>=0.3.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0.0", "pytest-cov>=4.0.0"]
+tushare = ["tushare>=1.4.0"]
+
+[project.scripts]
+trade-sentry = "trade_sentry.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trade_sentry*"]
