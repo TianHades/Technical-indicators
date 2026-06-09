@@ -367,7 +367,8 @@ def get_stock_name(raw_code: str) -> str:
 
 def fetch_market_data(raw_code: str, cfg: Optional[Config] = None,
                       lookback_days: int = 250,
-                      as_of: Optional[str] = None) -> MarketData:
+                      as_of: Optional[str] = None,
+                      skip_cache: bool = False) -> MarketData:
     """获取股票行情数据（带缓存和 fallback）。
 
     Args:
@@ -398,15 +399,16 @@ def fetch_market_data(raw_code: str, cfg: Optional[Config] = None,
             )
         return result
 
-    # 实时模式：检查缓存
-    cache_ttl = cfg.data("cache_days") or 1
-    cached = _get_cached(ts_code, max_age_hours=cache_ttl * 24)
-    if cached:
-        return MarketData(
-            symbol=ts_code, daily=cached["daily"], weekly=cached["weekly"],
-            fetched_at=datetime.fromisoformat(cached["fetched_at"]),
-            data_source=cached["data_source"] + " (cached)"
-        )
+    # 实时模式：检查缓存（skip_cache=True 时跳过）
+    if not skip_cache:
+        cache_ttl = cfg.data("cache_days") or 1
+        cached = _get_cached(ts_code, max_age_hours=cache_ttl * 24)
+        if cached:
+            return MarketData(
+                symbol=ts_code, daily=cached["daily"], weekly=cached["weekly"],
+                fetched_at=datetime.fromisoformat(cached["fetched_at"]),
+                data_source=cached["data_source"] + " (cached)"
+            )
 
     result = _fetch_live(ts_code, market, lookback_days)
     if result is None:

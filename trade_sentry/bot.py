@@ -93,7 +93,7 @@ def _run_review(symbol: str, direction: Direction = Direction.BUY,
                 stop_loss: Optional[float] = None, as_of: Optional[str] = None) -> dict:
     """执行完整审查，返回结构化结果字典。支持可选参数覆盖默认值。"""
     cfg = get_config()
-    md = fetch_market_data(symbol, cfg, as_of=as_of)
+    md = fetch_market_data(symbol, cfg, as_of=as_of, skip_cache=True)
     ind = compute_indicators(md)
     regime = classify_regime(ind, cfg)
 
