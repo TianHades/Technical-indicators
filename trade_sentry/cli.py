@@ -434,7 +434,7 @@ def cmd_batch(args):
         llm_r = llm_results.get(i) if use_llm else None
         llm_score = llm_r.overall_reasonableness if llm_r else None
         display_score = llm_score if llm_score is not None else rule_score
-        rows.append((date_str, close, v, pn, wn, bn, display_score, llm_score, llm_r))
+        rows.append((date_str, close, v, pn, wn, bn, rule_score, display_score, llm_score, llm_r))
 
     table = RTable(title=f"批量回测结果 — {symbol} ({mode})")
     table.add_column("日期")
@@ -446,12 +446,12 @@ def cmd_batch(args):
         table.add_column("LLM", justify="right")
 
     for row_data in rows:
-        date_str, close, v, pn, wn, bn, score, llm_score, _ = row_data
+        date_str, close, v, pn, wn, bn, rule_s, display_s, llm_s, _ = row_data
         color = "green" if v == "PASS" else ("yellow" if v == "WARN" else "red")
         cells = [date_str, f"{close:.2f}", f"[{color}]{v}[/{color}]",
-                 f"{pn}/{wn}/{bn}", str(score)]
+                 f"{pn}/{wn}/{bn}", str(rule_s)]
         if use_llm:
-            cells.append(str(llm_score) if llm_score is not None else "—")
+            cells.append(str(llm_s) if llm_s is not None else "—")
         table.add_row(*cells)
 
     console.print(table)
@@ -460,7 +460,7 @@ def cmd_batch(args):
     pass_n = sum(1 for r in rows if r[2] == "PASS")
     warn_n = sum(1 for r in rows if r[2] == "WARN")
     block_n = sum(1 for r in rows if r[2] == "BLOCK")
-    avg_score = sum(r[6] for r in rows) / total if total > 0 else 0
+    avg_score = sum(r[5] for r in rows) / total if total > 0 else 0  # r[5]=rule_score
     console.print(f"\n共 {total} 个采样点 | PASS: {pass_n} ({pass_n/total*100:.0f}%) | "
                   f"WARN: {warn_n} ({warn_n/total*100:.0f}%) | "
                   f"BLOCK: {block_n} ({block_n/total*100:.0f}%) | "
@@ -492,10 +492,10 @@ def cmd_batch(args):
         writer.writerow(header)
 
         for i, row_data in enumerate(rows):
-            date_str, close, v, pn, wn, bn, score, llm_score, llm_r = row_data
+            date_str, close, v, pn, wn, bn, rule_s, display_s, llm_s, llm_r = row_data
             ind = indicators[i]
             base_row = [
-                date_str, f"{close:.2f}", v, pn, wn, bn, score,
+                date_str, f"{close:.2f}", v, pn, wn, bn, rule_s,
                 ", ".join(ind.candlestick_patterns[:3]) if ind.candlestick_patterns else "",
                 ", ".join(ind.weekly_candlestick_patterns[:3]) if ind.weekly_candlestick_patterns else "",
             ]
@@ -529,7 +529,7 @@ def cmd_batch(args):
             r = base_row
             if use_llm:
                 r += [
-                    str(llm_score) if llm_score is not None else "",
+                    str(llm_s) if llm_s is not None else "",
                     llm_r.indicator_analysis.replace("\n", " ") if llm_r and llm_r.indicator_analysis else "",
                     llm_r.trading_advice.replace("\n", " ") if llm_r and llm_r.trading_advice else "",
                     "; ".join(llm_r.key_concerns) if llm_r and llm_r.key_concerns else "",
@@ -548,8 +548,8 @@ def cmd_batch(args):
                  f"共 {total} 个采样点 | 均分: {avg_score:.1f}",
                  "", "---", ""]
         for row_data in rows:
-            date_str, close, v, pn, wn, bn, score, _, llm_r = row_data
-            lines.append(f"## {date_str}  收盘 {close:.2f}  判定 {v}  规则 {score}")
+            date_str, close, v, pn, wn, bn, rule_s, display_s, llm_s, llm_r = row_data
+            lines.append(f"## {date_str}  收盘 {close:.2f}  判定 {v}  规则 {rule_s}")
             if llm_r:
                 lines.append(f"**LLM 评分: {llm_r.overall_reasonableness}**")
                 if llm_r.indicator_analysis:
